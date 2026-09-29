@@ -1,0 +1,25 @@
+{
+  "name": "Скидка+",
+  "short_name": "Скидка+",
+  "description": "Приложение для управления картами лояльности",
+  "theme_color": "#561183",
+  "background_color": "#592c84",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "start_url": "./",
+  "icons": [
+    {
+      "src": "images/icons/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/icons/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "splash_pages": null
+}

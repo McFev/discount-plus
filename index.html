@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#9b68cd">
+    <meta name="description" content="Приложение для управления картами лояльности">
+    <title>Скидка+</title>
+
+    <link rel="icon" type="image/png" href="./favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./images/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Скидка+" />
+    <link rel="manifest" href="./site.webmanifest" />
+
+    <link rel="stylesheet" href="styles.css">
+    <script src="bwip-js-min.js" fromURL="https://cdn.jsdelivr.net/npm/bwip-js@4.3.0/dist/bwip-js-min.js"
+        github="https://github.com/metafloor/bwip-js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Скидка+</h1>
+            <div class="header-actions">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Поиск по названию...">
+                </div>
+                <a href="#" id="addCardBtn" class="btnHeader btn-primary btn-icon" title="Добавить карту">+</a>
+                <a href="#" id="aboutBtn" class="btnHeader btn-primary btn-icon" title="О программе">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </a>
+            </div>
+        </header>
+
+        <div class="filters" id="categoryFilters">
+            <button id="filterAll" class="btn btn-filter active" data-filter="">Все</button>
+            <button id="filterFavorites" class="btn btn-filter" data-filter="favorites">⭐</button>
+            <!-- Категории будут добавлены динамически -->
+        </div>
+
+        <div id="cardsContainer" class="cards-container">
+            <!-- Карты будут добавлены динамически -->
+        </div>
+
+        <div id="emptyState" class="empty-state">
+            <p>У вас пока нет карт лояльности</p>
+            <p>Нажмите "Добавить карту" чтобы начать</p>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления/редактирования карты -->
+    <div id="cardModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Добавить карту</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="cardForm">
+                <div class="form-group">
+                    <label for="cardName">Название карты *</label>
+                    <input type="text" id="cardName" required placeholder="Например: Пятёрочка">
+                </div>
+
+                <div class="form-group" id="translitGroup" style="display: none;">
+                    <label for="cardTranslit">Транслитное название</label>
+                    <input type="text" id="cardTranslit"
+                        placeholder="Автоматически заполняется для английских названий">
+                </div>
+
+                <div class="form-group">
+                    <label for="cardCategory">Категория</label>
+                    <div class="category-input-group">
+                        <select id="cardCategory">
+                            <option value="">Без категории</option>
+                        </select>
+                        <a href="#" type="button" id="addCategoryBtn" class="btn btn-secondary btn-small">+</a>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cardColor">Цвет карты</label>
+                    <input type="color" id="cardColor" value="#9b68cd">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="cardLogo">Логотип карты</label>
+                    <input type="file" id="cardLogo" accept="image/*">
+                    <div id="logoPreview" class="logo-preview"></div>
+                    <button type="button" id="removeLogoBtn" class="btn btn-secondary"
+                        style="display: none; margin-top: 10px;">Удалить логотип</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="barcodeType">Тип штрих-кода *</label>
+                    <select id="barcodeType" required>
+                        <option value="QRCODE">QR</option>
+                        <option value="CODE128">CODE128</option>
+                        <option value="PDF417">PDF417</option>
+                        <option value="EAN13">EAN13</option>
+                        <option value="INTERLEAVED2OF5">ITF</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="barcodeValue">Штрих-код *</label>
+                    <input type="text" id="barcodeValue" required placeholder="Введите номер штрих-кода">
+                </div>
+
+                <div class="form-group">
+                    <label for="additionalInfo">Дополнительная информация</label>
+                    <textarea id="additionalInfo" rows="4"
+                        placeholder="Любая дополнительная информация о карте"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления категории -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content modal-content-small">
+            <div class="modal-header">
+                <h2>Добавить категорию</h2>
+                <span class="close" id="closeCategoryModal">&times;</span>
+            </div>
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label for="newCategoryName">Название категории *</label>
+                    <input type="text" id="newCategoryName" required placeholder="Например: Супермаркеты">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelCategoryBtn">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно экспорта и импорта -->
+    <div id="dataModal" class="modal">
+        <div class="modal-content modal-content-small">
+            <div class="modal-header">
+                <h2>Экспорт и импорт</h2>
+                <span class="close" id="closeDataModal">&times;</span>
+            </div>
+            <div class="data-content">
+                <h3 class="data-section-title">Экспорт</h3>
+                <p class="data-hint">Все карты будут сохранены в JSON-файл (массив).</p>
+                <button type="button" id="exportBtn" class="btn btn-secondary">Скачать JSON-файл</button>
+
+                <hr>
+
+                <h3 class="data-section-title">Импорт</h3>
+                <div class="data-warning">
+                    Внимание! Импорт заменит ВСЕ текущие карты и категории.
+                    Не загружайте файлы и ссылки из неизвестных источников.
+                </div>
+
+                <div class="form-group">
+                    <label for="importFile">Из файла (.json)</label>
+                    <input type="file" id="importFile" accept=".json,application/json,text/plain">
+                </div>
+
+                <div class="form-group">
+                    <label for="importUrl">Или по ссылке (URL)</label>
+                    <input type="url" id="importUrl" name="importUrl" autocomplete="off"
+                        placeholder="https://example.com/cards.json">
+                </div>
+
+                <button type="button" id="importUrlBtn" class="btn btn-secondary">Загрузить по ссылке</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно "О программе" -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content modal-content-small">
+            <div class="modal-header">
+                <h2>О программе</h2>
+                <span class="close" id="closeAboutModal">&times;</span>
+            </div>
+            <div class="about-content">
+                <p><strong>Скидка+</strong></p>
+                <p>Приложение для управления картами лояльности. Все данные хранятся локально на вашем устройстве.</p>
+                <p>Версия: <span id="APP_VERSION">X.X.X</span></p>
+                <p>Автор: Филатов Евгений</p>
+                <p style="color: #d0d0d0;">//todo Поделиться приложением</p>
+                <p style="color: #d0d0d0;">//todo Исходный код: github</p>
+                <p style="color: #d0d0d0;">//todo Помощь</p>
+
+                <hr>
+
+                <p>Карт в базе: <span id="aboutCardCount">0</span></p>
+                <p>Размер базы: <span id="aboutDbSize">—</span></p>
+                <div class="about-actions">
+                    <button type="button" id="openDataModalBtn" class="btn btn-secondary">Экспорт и импорт карт</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для детального просмотра карты -->
+    <div id="cardDetailModal" class="modal">
+        <div class="modal-content modal-content-large">
+            <div class="modal-header">
+                <h2 id="detailCardTitle">Детали карты</h2>
+                <span class="close" id="closeDetailModal">&times;</span>
+            </div>
+            <div id="cardDetailContent" class="card-detail-content">
+                <!-- Содержимое будет добавлено динамически -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Универсальное диалоговое окно (замена alert/confirm).
+         Стоит последним в DOM + повышенный z-index, чтобы всегда быть
+         ПОВЕРХ других открытых модалок (просмотра карты, формы и т.д.) -->
+    <div id="dialogModal" class="modal">
+        <div class="modal-content modal-content-small">
+            <div class="modal-header">
+                <h2 id="dialogTitle">Внимание</h2>
+                <span class="close" id="closeDialogModal">&times;</span>
+            </div>
+            <div class="dialog-content">
+                <p id="dialogMessage"></p>
+            </div>
+            <div class="form-actions form-actions-msg">
+                <button type="button" class="btn btn-secondary" id="dialogCancelBtn">Отмена</button>
+                <button type="button" class="btn btn-primary" id="dialogOkBtn">ОК</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
