@@ -5,8 +5,8 @@
   "theme_color": "#561183",
   "background_color": "#592c84",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "start_url": "./",
+  "orientation": "portrait",
+  "start_url": "https://mcfev.github.io/discount-plus/",
   "icons": [
     {
       "src": "images/icons/web-app-manifest-192x192.png",
