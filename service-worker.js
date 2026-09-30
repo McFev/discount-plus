@@ -1,5 +1,5 @@
 // Service Worker для PWA
-const CACHE_NAME = 'discount-plus-v1_0_2';
+const CACHE_NAME = 'discount-plus-v1_0_3';
 const urlsToCache = [
   './',
   './index.html',
