@@ -1,48 +1,59 @@
-// Service Worker для PWA
-const CACHE_NAME = 'discount-plus-v1_0_4';
-const urlsToCache = [
+const staticCacheName = 'static-cache-discount-plus-v1_0_5';
+const dynamicCacheName = 'dynamic-cache-discount-plus-v1_0_5';
+
+const staticAssets = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './site.webmanifest',
-  './bwip-js-min.js'
+  './bwip-js-min.js',
+  './images/icons/apple-touch-icon.png',
+  './images/icons/web-app-manifest-192x192.png',
+  './images/icons/web-app-manifest-512x512.png'
 ];
 
-// Установка Service Worker
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Кэш открыт');
-        return cache.addAll(urlsToCache);
-      })
-  );
+self.addEventListener('install', async event => {
+  const cache = await caches.open(staticCacheName);
+  await cache.addAll(staticAssets);
+  console.log('Service worker has been installed');
 });
 
-// Активация Service Worker
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Удаление старого кэша:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+self.addEventListener('activate', async event => {
+  const cachesKeys = await caches.keys();
+  const checkKeys = cachesKeys.map(async key => {
+    if (![staticCacheName, dynamicCacheName].includes(key)) {
+      await caches.delete(key);
+    }
+  });
+  await Promise.all(checkKeys);
+  console.log('Service worker has been activated');
 });
 
-// Перехват запросов
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Возвращаем из кэша, если есть, иначе загружаем из сети
-        return response || fetch(event.request);
-      })
-  );
+  console.log(`Trying to fetch ${event.request.url}`);
+  event.respondWith(checkCache(event.request));
 });
+
+async function checkCache(req) {
+  const cachedResponse = await caches.match(req);
+  return cachedResponse || checkOnline(req);
+}
+
+async function checkOnline(req) {
+  const cache = await caches.open(dynamicCacheName);
+  try {
+    const res = await fetch(req);
+    await cache.put(req, res.clone());
+    return res;
+  } catch (error) {
+    const cachedRes = await cache.match(req);
+    if (cachedRes) {
+      return cachedRes;
+    } else if (req.url.indexOf('.html') !== -1) {
+      return caches.match('./index.html');
+    } else {
+      return caches.match('./images/no-image.png');
+    }
+  }
+}
