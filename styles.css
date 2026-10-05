@@ -764,3 +764,25 @@ hr {
     background-color: var(--border-color);
     margin: 20px 0;
 }
+
+/* Индикатор автономного режима (нет интернета) */
+.offline-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    margin: 10px;
+    border-radius: 12px;
+    background: #a6a6a6;
+    color: #fff;
+    font-size: 14px;
+    box-shadow: var(--shadow);
+}
+
+.offline-banner svg {
+    flex-shrink: 0;
+}
+
+.offline-banner[hidden] {
+    display: none;
+}
