@@ -1,4 +1,4 @@
-const APP_VERSION = "1.0.5";
+const APP_VERSION = "1.0.6";
 
 // ===== Хранилища =====
 // Настройки (категории и фильтры) хранятся в localStorage под ключом
@@ -74,6 +74,9 @@ class LoyaltyCardsApp {
     async init() {
         // Сначала вешаем обработчики, чтобы интерфейс отвечал сразу
         this.setupEventListeners();
+
+        // Индикатор автономного режима (отображается, когда нет интернета)
+        this.setupOfflineBanner();
 
         // Категории и фильтры — из localStorage (ключ discountPlus)
         this.loadSettings();
@@ -302,6 +305,23 @@ class LoyaltyCardsApp {
                     });
             });
         }
+    }
+
+    // Индикатор автономного режима: баннер виден, когда нет интернета.
+    // Данные (карты, категории) хранятся локально, поэтому приложение
+    // полностью работает и без сети
+    setupOfflineBanner() {
+        const banner = document.getElementById('offlineBanner');
+        if (!banner) return;
+
+        const updateBanner = () => {
+            banner.hidden = navigator.onLine;
+        };
+
+        // События online/offline срабатывают при появлении/потере сети
+        window.addEventListener('online', updateBanner);
+        window.addEventListener('offline', updateBanner);
+        updateBanner();
     }
 
     // Соответствие типа модалки в history.state и её DOM-элемента
@@ -1081,7 +1101,7 @@ class LoyaltyCardsApp {
                 attempts++;
                 if (typeof bwipjs !== 'undefined') {
                     clearInterval(checkInterval);
-                    generateBarcode(elementId, value, type, options); // рекурсивный вызов
+                    this.generateBarcode(elementId, value, type, options); // рекурсивный вызов
                 } else if (attempts > 50) { // ~5 секунд
                     clearInterval(checkInterval);
                     element.innerHTML = '<p style="color:red;">Ошибка: библиотека bwip-js не загрузилась</p>';
@@ -1431,6 +1451,16 @@ class LoyaltyCardsApp {
 
         if (!url) {
             this.showAlert('Введите ссылку на JSON-файл с картами.');
+            return;
+        }
+
+        // Загрузка по ссылке невозможна без интернета
+        if (!navigator.onLine) {
+            this.showAlert(
+                'Нет подключения к интернету. Проверьте сеть и попробуйте позже — ' +
+                'все сохранённые карты доступны и без интернета.',
+                'Нет подключения'
+            );
             return;
         }
 
