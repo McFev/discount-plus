@@ -23,8 +23,10 @@
     <meta property="og:type" content="product">
 
     <link rel="stylesheet" href="styles.css">
-    <script src="bwip-js-min.js" fromURL="https://cdn.jsdelivr.net/npm/bwip-js@4.3.0/dist/bwip-js-min.js"
-        github="https://github.com/metafloor/bwip-js"></script>
+    <!-- bwip-js подключается лениво из app.js — динамически при первом открытии
+         карты, чтобы не замедлять начальную загрузку страницы.
+         Источник библиотеки: https://cdn.jsdelivr.net/npm/bwip-js@4.3.0/dist/bwip-js-min.js
+         (https://github.com/metafloor/bwip-js) -->
 </head>
 
 <body>

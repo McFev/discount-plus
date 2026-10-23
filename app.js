@@ -1,4 +1,4 @@
-const APP_VERSION = "1.0.7";
+const APP_VERSION = "1.0.8";
 
 // ===== Хранилища =====
 // Настройки (категории и фильтры) хранятся в localStorage под ключом
@@ -68,6 +68,8 @@ class LoyaltyCardsApp {
         this.searchQuery = '';
         this.filterFavorites = false;
         this.filterCategory = '';
+        // Промис ленивой загрузки bwip-js (создаётся при первом открытии карты)
+        this._bwipJsPromise = null;
         this.init().catch(err => console.error('Ошибка инициализации приложения:', err));
     }
 
@@ -1081,33 +1083,59 @@ class LoyaltyCardsApp {
     }
 
     /**
-     * Генерирует штрих-код с помощью bwip-js
+     * Лениво загружает bwip-js (динамическое подключение <script>).
+     * Библиотека скачивается один раз — при первом открытии карты, —
+     * чтобы не замедлять начальную загрузку страницы.
+     * @returns {Promise<void>} — промис, resolves после загрузки библиотеки
+     */
+    loadBwipJs() {
+        // Библиотека уже доступна (загружена ранее) — ничего делать не нужно
+        if (typeof bwipjs !== 'undefined') return Promise.resolve();
+
+        // Повторные вызовы дожидаются той же самой загрузки
+        if (!this._bwipJsPromise) {
+            this._bwipJsPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'bwip-js-min.js';
+                script.onload = () => resolve();
+                script.onerror = () => {
+                    // Сбрасываем промис, чтобы следующее открытие карты
+                    // могло повторить попытку загрузки
+                    this._bwipJsPromise = null;
+                    reject(new Error('Не удалось загрузить bwip-js-min.js'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+        return this._bwipJsPromise;
+    }
+
+    /**
+     * Генерирует штрих-код с помощью bwip-js.
+     * При первом вызове динамически подключает bwip-js-min.js.
      * @param {string} elementId — ID элемента (canvas или div)
      * @param {string} value     — данные для кодирования
      * @param {string} type      — тип штрих-кода: 'pdf417', 'qrcode', 'code128', 'itf', 'ean13' и т.д.
      * @param {object} options   — дополнительные настройки (необязательно)
      */
     generateBarcode(elementId, value, type, options = {}) {
+        // bwip-js загружается лениво — при первом открытии карты
+        this.loadBwipJs()
+            .then(() => this.renderBarcode(elementId, value, type, options))
+            .catch(err => {
+                console.error('bwip-js не загружен:', err);
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.innerHTML = '<p style="color:red;">Ошибка: библиотека bwip-js не загрузилась</p>';
+                }
+            });
+    }
+
+    // Отрисовка штрих-кода (выполняется после загрузки bwip-js)
+    renderBarcode(elementId, value, type, options = {}) {
         const element = document.getElementById(elementId);
         if (!element) {
             console.error('Элемент не найден:', elementId);
-            return;
-        }
-
-        // Ожидание загрузки bwip-js (если подключаешь через <script src="...">)
-        if (typeof bwipjs === 'undefined') {
-            let attempts = 0;
-            const checkInterval = setInterval(() => {
-                attempts++;
-                if (typeof bwipjs !== 'undefined') {
-                    clearInterval(checkInterval);
-                    this.generateBarcode(elementId, value, type, options); // рекурсивный вызов
-                } else if (attempts > 50) { // ~5 секунд
-                    clearInterval(checkInterval);
-                    element.innerHTML = '<p style="color:red;">Ошибка: библиотека bwip-js не загрузилась</p>';
-                    console.error('bwip-js не загружен');
-                }
-            }, 100);
             return;
         }
 
