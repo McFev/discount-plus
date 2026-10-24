@@ -1,4 +1,4 @@
-const APP_VERSION = "1.0.8";
+const APP_VERSION = "1.0.9";
 
 // ===== Хранилища =====
 // Настройки (категории и фильтры) хранятся в localStorage под ключом
@@ -1563,3 +1563,24 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('APP_VERSION').textContent = APP_VERSION;
     app = new LoyaltyCardsApp();
 });
+
+//+поделиться приложением
+const shareLink = document.getElementById('shareLink')
+shareLink.addEventListener('click', async (event) => {
+    event.preventDefault() // Предотвращаем переход по ссылке
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Скидка+',
+                text: 'Попробуй это приложение!',
+                url: window.location.href, // Текущая ссылка на приложение
+            })
+            console.log('Ссылка успешно отправлена')
+        } catch (error) {
+            console.error('Ошибка при использовании Web Share API:', error)
+        }
+    } else {
+        alert('Ваше устройство не поддерживает функцию «Поделиться»')
+    }
+})
+//-поделиться приложением
