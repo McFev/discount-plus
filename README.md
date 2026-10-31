@@ -8,4 +8,4 @@
 
 ## Скриншоты
 
-*todo*
+ ![screenshot](https://github.com/user-attachments/assets/fe113f86-cf1b-49b9-ba81-c4aac6bbc853)
