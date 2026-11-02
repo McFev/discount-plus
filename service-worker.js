@@ -1,5 +1,5 @@
-const staticCacheName = 'static-cache-discount-plus-v1_0_9';
-const dynamicCacheName = 'dynamic-cache-discount-plus-v1_0_9';
+const staticCacheName = 'static-cache-discount-plus-v1_0_10';
+const dynamicCacheName = 'dynamic-cache-discount-plus-v1_0_10';
 
 // Файлы, необходимые приложению для полноценной работы без интернета
 const staticAssets = [
