@@ -1,4 +1,4 @@
-const APP_VERSION = "1.0.9";
+const APP_VERSION = "1.0.10";
 
 // ===== Хранилища =====
 // Настройки (категории и фильтры) хранятся в localStorage под ключом
@@ -815,7 +815,11 @@ class LoyaltyCardsApp {
                 </div>-->
                 <div class="card-info-item">
                     <span class="card-info-label">Штрих-код:</span>
-                    <span class="card-info-value">${this.escapeHtml(card.barcodeValue)}</span>
+                    <span class="card-info-value">${this.escapeHtml(
+                      card.barcodeValue && card.barcodeValue.length > 50
+                        ? card.barcodeValue.replace(/(.{5})/g, "$1 ").trim()
+                        : card.barcodeValue
+                    )}</span>
                 </div>
                 ${card.additionalInfo ? card.additionalInfo
                 .split('\n')
@@ -1163,6 +1167,7 @@ class LoyaltyCardsApp {
                 ...(type.toLowerCase() === 'qrcode' && {
                     includetext: false,
                     scale: 5,
+                    width: 15,
                     //version: 'auto' // или конкретный номер, если нужно
                 }),
                 // Для PDF417 тоже можно подправить
