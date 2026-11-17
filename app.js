@@ -1,4 +1,4 @@
-const APP_VERSION = "1.0.10";
+const APP_VERSION = "1.0.11";
 
 // ===== Хранилища =====
 // Настройки (категории и фильтры) хранятся в localStorage под ключом
@@ -815,11 +815,7 @@ class LoyaltyCardsApp {
                 </div>-->
                 <div class="card-info-item">
                     <span class="card-info-label">Штрих-код:</span>
-                    <span class="card-info-value">${this.escapeHtml(
-                      card.barcodeValue && card.barcodeValue.length > 50
-                        ? card.barcodeValue.replace(/(.{5})/g, "$1 ").trim()
-                        : card.barcodeValue
-                    )}</span>
+                    <span class="card-info-value">${this.escapeHtml(card.barcodeValue.replace(/(.{3})/g, "$1 ").trim())}</span>
                 </div>
                 ${card.additionalInfo ? card.additionalInfo
                 .split('\n')
